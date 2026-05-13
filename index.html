@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情緒卡片抽籤器</title>
+    <title>情緒卡片精準抽籤器</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
@@ -12,103 +12,124 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: #f4f7f6;
+            background-color: #f8f9fa;
             margin: 0;
         }
         .card {
-            width: 250px;
-            height: 150px;
+            width: 320px;
+            height: 200px;
             background: white;
-            border: 2px dashed #ccc;
-            border-radius: 15px;
+            border: 5px solid #ccc;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.1s;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+            margin-bottom: 40px;
+            transition: border-color 0.3s;
         }
-        .card.shuffling {
-            border-color: #ff6b6b;
-            transform: scale(1.05);
+        .chinese { font-size: 3.2rem; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .english { font-size: 1.6rem; color: #888; }
+        
+        .shuffling { animation: jump 0.1s infinite; border-color: #ffd54f !important; }
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
-        .chinese {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .english {
-            font-size: 1.2rem;
-            color: #777;
-        }
+
+        .button-group { display: flex; gap: 20px; }
         button {
-            padding: 10px 30px;
+            padding: 15px 30px;
             font-size: 1.2rem;
-            background-color: #4CAF50;
-            color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background 0.3s;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s;
         }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #ccc;
-        }
+        button:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.1); }
+        button:disabled { opacity: 0.5; cursor: wait; }
+        
+        .btn-red { background-color: #ef5350; box-shadow: 0 4px #c62828; }
+        .btn-black { background-color: #424242; box-shadow: 0 4px #212121; }
+        .btn-mix { background-color: #7e57c2; box-shadow: 0 4px #5e35b1; }
+        
+        .status { margin-top: 20px; font-weight: bold; color: #666; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="cardDisplay">
-        <div class="chinese" id="cnText">準備抽籤</div>
-        <div class="english" id="enText">Ready?</div>
+    <div class="card" id="displayBox">
+        <div class="chinese" id="cn">情緒卡片</div>
+        <div class="english" id="en">Emotion Card</div>
     </div>
 
-    <button id="drawBtn" onclick="drawCard()">點選抽籤</button>
+    <div class="button-group">
+        <button class="btn-red" id="rBtn" onclick="runDraw('red')">抽紅色 (27張)</button>
+        <button class="btn-black" id="bBtn" onclick="runDraw('black')">抽黑色 (27張)</button>
+        <button class="btn-mix" id="mBtn" onclick="runDraw('mix')">全混抽 (54張)</button>
+    </div>
+
+    <div class="status" id="statusLabel">請選擇一個牌堆開始</div>
 
     <script>
-        const cards = [
-            {ch: "驚喜", en: "Surprise"}, {ch: "超爽der", en: "Song La"}, {ch: "焦躁", en: "Restless"}, {ch: "是喔", en: "Is that so?"}, {ch: "憤怒", en: "Enraged"}, {ch: "絕望", en: "Despair"}, {ch: "放鬆", en: "Relax"}, {ch: "完蛋了", en: "Bar B Q"}, {ch: "驕傲", en: "Proud"}, {ch: "緊張", en: "Nervous"}, {ch: "受傷", en: "Hurt"}, {ch: "感動", en: "Touched"}, {ch: "無聊", en: "Bored"}, {ch: "沉重", en: "Critical"}, {ch: "平靜", en: "Calm"}, {ch: "揪甘心", en: "So Sweet"}, {ch: "誇張", en: "Exaggerate"}, {ch: "滿意", en: "Satisfied"}, {ch: "快樂", en: "Happy"}, {ch: "我就爛", en: "I suck"}, {ch: "恨", en: "Hate"}, {ch: "溫暖", en: "Warmth"}, {ch: "啟發", en: "Inspired"}, {ch: "很煩", en: "Annoying"}, {ch: "害怕", en: "Scared"}, {ch: "憂鬱", en: "Depressed"}, {ch: "幸福", en: "Blissful"}, {ch: "遺憾", en: "Pity"}, {ch: "忌妒", en: "Jealous"}, {ch: "安心", en: "Peace of mind"}, {ch: "好奇", en: "Curiosity"}, {ch: "不情願", en: "Reluctance"}, {ch: "興奮", en: "Excited"}, {ch: "開心", en: "Pleased"}, {ch: "恐懼", en: "Fearful"}, {ch: "羨慕", en: "Envy"}, {ch: "內疚", en: "Guilt"}, {ch: "後悔", en: "Regret"}, {ch: "期待", en: "Expected"}, {ch: "生氣", en: "Angry"}, {ch: "滿足", en: "Content"}, {ch: "擔心", en: "Worried"}, {ch: "可...可惡", en: "Damn"}, {ch: "難過", en: "Sad"}, {ch: "悲傷", en: "Grief"}, {ch: "抓狂", en: "Crazy"}, {ch: "舒服", en: "Comfortable"}, {ch: "開放", en: "Open"}, {ch: "被愛", en: "Be loved"}, {ch: "有壓力", en: "Pressure"}, {ch: "孤單", en: "Lonely"}, {ch: "失望", en: "Disappointed"}, {ch: "感謝", en: "Grateful"}, {ch: "自信", en: "Proud"}
+        // 嚴格對照「圖片1.jpg」花色
+        const RED_DECK = [
+            {ch:"驚喜", en:"Surprise"}, {ch:"超爽der", en:"Song La"}, {ch:"是喔", en:"Is that so?"}, {ch:"放鬆", en:"Relax"}, {ch:"完蛋了", en:"Bar B Q"},
+            {ch:"驕傲", en:"Proud"}, {ch:"感動", en:"Touched"}, {ch:"無聊", en:"Bored"}, {ch:"平靜", en:"Calm"}, {ch:"揪甘心", en:"So Sweet"},
+            {ch:"誇張", en:"Exaggerate"}, {ch:"滿意", en:"Satisfied"}, {ch:"快樂", en:"Happy"}, {ch:"溫暖", en:"Warmth"}, {ch:"啟發", en:"Inspired"},
+            {ch:"幸福", en:"Blissful"}, {ch:"安心", en:"Peace of mind"}, {ch:"好奇", en:"Curiosity"}, {ch:"興奮", en:"Excited"}, {ch:"開心", en:"Pleased"},
+            {ch:"期待", en:"Expected"}, {ch:"滿足", en:"Content"}, {ch:"舒服", en:"Comfortable"}, {ch:"開放", en:"Open"}, {ch:"被愛", en:"Be loved"},
+            {ch:"感謝", en:"Grateful"}, {ch:"自信", en:"Proud"}
         ];
 
-        let isShuffling = false;
+        const BLACK_DECK = [
+            {ch:"焦躁", en:"Restless"}, {ch:"憤怒", en:"Enraged"}, {ch:"絕望", en:"Despair"}, {ch:"緊張", en:"Nervous"}, {ch:"受傷", en:"Hurt"},
+            {ch:"沉重", en:"Critical"}, {ch:"我就爛", en:"I suck"}, {ch:"恨", en:"Hate"}, {ch:"很煩", en:"Annoying"}, {ch:"害怕", en:"Scared"},
+            {ch:"憂鬱", en:"Depressed"}, {ch:"遺憾", en:"Pity"}, {ch:"忌妒", en:"Jealous"}, {ch:"不情願", en:"Reluctance"}, {ch:"恐懼", en:"Fearful"},
+            {ch:"羨慕", en:"Envy"}, {ch:"內疚", en:"Guilt"}, {ch:"後悔", en:"Regret"}, {ch:"生氣", en:"Angry"}, {ch:"擔心", en:"Worried"},
+            {ch:"可...可惡", en:"Damn"}, {ch:"難過", en:"Sad"}, {ch:"悲傷", en:"Grief"}, {ch:"抓狂", en:"Crazy"}, {ch:"有壓力", en:"Pressure"},
+            {ch:"孤單", en:"Lonely"}, {ch:"失望", en:"Disappointed"}
+        ];
 
-        function drawCard() {
-            if (isShuffling) return;
-            
-            const btn = document.getElementById('drawBtn');
-            const cardDisplay = document.getElementById('cardDisplay');
-            const cnText = document.getElementById('cnText');
-            const enText = document.getElementById('enText');
+        const FULL_DECK = [...RED_DECK, ...BLACK_DECK];
 
-            isShuffling = true;
-            btn.disabled = true;
-            cardDisplay.classList.add('shuffling');
+        function runDraw(mode) {
+            const box = document.getElementById('displayBox');
+            const cn = document.getElementById('cn');
+            const en = document.getElementById('en');
+            const status = document.getElementById('statusLabel');
+            const buttons = document.querySelectorAll('button');
 
-            let counter = 0;
-            const shuffleInterval = setInterval(() => {
-                const randomIndex = Math.floor(Math.random() * cards.length);
-                cnText.innerText = cards[randomIndex].ch;
-                enText.innerText = cards[randomIndex].ch === "準備抽籤" ? "Ready?" : cards[randomIndex].en;
-                counter++;
+            let pool = mode === 'red' ? RED_DECK : (mode === 'black' ? BLACK_DECK : FULL_DECK);
+            let color = mode === 'red' ? '#ef5350' : (mode === 'black' ? '#424242' : '#7e57c2');
 
-                if (counter > 20) { // 輪轉次數
-                    clearInterval(shuffleInterval);
-                    const finalIndex = Math.floor(Math.random() * cards.length);
-                    cnText.innerText = cards[finalIndex].ch;
-                    enText.innerText = cards[finalIndex].en;
+            // 開始動畫
+            box.classList.add('shuffling');
+            buttons.forEach(b => b.disabled = true);
+            status.innerText = "正在洗牌中...";
+
+            let count = 0;
+            const interval = setInterval(() => {
+                const rand = pool[Math.floor(Math.random() * pool.length)];
+                cn.innerText = rand.ch;
+                en.innerText = rand.en;
+                count++;
+
+                if (count > 15) {
+                    clearInterval(interval);
+                    const final = pool[Math.floor(Math.random() * pool.length)];
+                    cn.innerText = final.ch;
+                    en.innerText = final.en;
                     
-                    cardDisplay.classList.remove('shuffling');
-                    btn.disabled = false;
-                    isShuffling = false;
+                    box.classList.remove('shuffling');
+                    box.style.borderColor = color;
+                    buttons.forEach(b => b.disabled = false);
+                    status.innerText = "抽牌完成！";
                 }
-            }, 80); // 輪轉速度 (毫秒)
+            }, 80);
         }
     </script>
 </body>
