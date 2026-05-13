@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情緒卡片抽籤器</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+        }
+        .card {
+            width: 250px;
+            height: 150px;
+            background: white;
+            border: 2px dashed #ccc;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.1s;
+        }
+        .card.shuffling {
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+        }
+        .chinese {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .english {
+            font-size: 1.2rem;
+            color: #777;
+        }
+        button {
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="cardDisplay">
+        <div class="chinese" id="cnText">準備抽籤</div>
+        <div class="english" id="enText">Ready?</div>
+    </div>
+
+    <button id="drawBtn" onclick="drawCard()">點選抽籤</button>
+
+    <script>
+        const cards = [
+            {ch: "驚喜", en: "Surprise"}, {ch: "超爽der", en: "Song La"}, {ch: "焦躁", en: "Restless"}, {ch: "是喔", en: "Is that so?"}, {ch: "憤怒", en: "Enraged"}, {ch: "絕望", en: "Despair"}, {ch: "放鬆", en: "Relax"}, {ch: "完蛋了", en: "Bar B Q"}, {ch: "驕傲", en: "Proud"}, {ch: "緊張", en: "Nervous"}, {ch: "受傷", en: "Hurt"}, {ch: "感動", en: "Touched"}, {ch: "無聊", en: "Bored"}, {ch: "沉重", en: "Critical"}, {ch: "平靜", en: "Calm"}, {ch: "揪甘心", en: "So Sweet"}, {ch: "誇張", en: "Exaggerate"}, {ch: "滿意", en: "Satisfied"}, {ch: "快樂", en: "Happy"}, {ch: "我就爛", en: "I suck"}, {ch: "恨", en: "Hate"}, {ch: "溫暖", en: "Warmth"}, {ch: "啟發", en: "Inspired"}, {ch: "很煩", en: "Annoying"}, {ch: "害怕", en: "Scared"}, {ch: "憂鬱", en: "Depressed"}, {ch: "幸福", en: "Blissful"}, {ch: "遺憾", en: "Pity"}, {ch: "忌妒", en: "Jealous"}, {ch: "安心", en: "Peace of mind"}, {ch: "好奇", en: "Curiosity"}, {ch: "不情願", en: "Reluctance"}, {ch: "興奮", en: "Excited"}, {ch: "開心", en: "Pleased"}, {ch: "恐懼", en: "Fearful"}, {ch: "羨慕", en: "Envy"}, {ch: "內疚", en: "Guilt"}, {ch: "後悔", en: "Regret"}, {ch: "期待", en: "Expected"}, {ch: "生氣", en: "Angry"}, {ch: "滿足", en: "Content"}, {ch: "擔心", en: "Worried"}, {ch: "可...可惡", en: "Damn"}, {ch: "難過", en: "Sad"}, {ch: "悲傷", en: "Grief"}, {ch: "抓狂", en: "Crazy"}, {ch: "舒服", en: "Comfortable"}, {ch: "開放", en: "Open"}, {ch: "被愛", en: "Be loved"}, {ch: "有壓力", en: "Pressure"}, {ch: "孤單", en: "Lonely"}, {ch: "失望", en: "Disappointed"}, {ch: "感謝", en: "Grateful"}, {ch: "自信", en: "Proud"}
+        ];
+
+        let isShuffling = false;
+
+        function drawCard() {
+            if (isShuffling) return;
+            
+            const btn = document.getElementById('drawBtn');
+            const cardDisplay = document.getElementById('cardDisplay');
+            const cnText = document.getElementById('cnText');
+            const enText = document.getElementById('enText');
+
+            isShuffling = true;
+            btn.disabled = true;
+            cardDisplay.classList.add('shuffling');
+
+            let counter = 0;
+            const shuffleInterval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * cards.length);
+                cnText.innerText = cards[randomIndex].ch;
+                enText.innerText = cards[randomIndex].ch === "準備抽籤" ? "Ready?" : cards[randomIndex].en;
+                counter++;
+
+                if (counter > 20) { // 輪轉次數
+                    clearInterval(shuffleInterval);
+                    const finalIndex = Math.floor(Math.random() * cards.length);
+                    cnText.innerText = cards[finalIndex].ch;
+                    enText.innerText = cards[finalIndex].en;
+                    
+                    cardDisplay.classList.remove('shuffling');
+                    btn.disabled = false;
+                    isShuffling = false;
+                }
+            }, 80); // 輪轉速度 (毫秒)
+        }
+    </script>
+</body>
+</html>
